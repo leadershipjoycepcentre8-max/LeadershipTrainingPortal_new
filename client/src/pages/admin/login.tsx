@@ -15,7 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Lock, User, GraduationCap, AlertCircle } from "lucide-react";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Valid email is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -29,24 +29,30 @@ export default function AdminLogin() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormData) => {
-      const response = await apiRequest("POST", "/api/auth/login", data);
+      // FIXED: send email instead of username
+      const response = await apiRequest("POST", "/api/auth/login", {
+        email: data.email,
+        password: data.password,
+      });
       return response;
     },
+
     onSuccess: (data) => {
       console.log("Login successful:", data);
       login(data.user, data.token);
-      // Use setTimeout to ensure state updates complete before redirect
+
       setTimeout(() => {
         setLocation("/admin/dashboard");
-      }, 100);
+      }, 150);
     },
+
     onError: (error: any) => {
       console.error("Login error:", error);
       setError(error.message || "Login failed. Please try again.");
@@ -61,7 +67,7 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* College Branding */}
+        
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-college-green rounded-full mb-4">
             <GraduationCap className="h-8 w-8 text-white" />
@@ -70,12 +76,12 @@ export default function AdminLogin() {
           <p className="text-college-gray">Training College</p>
         </div>
 
-        {/* Login Form */}
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-college-dark">Admin Login</CardTitle>
             <CardDescription>Access the admin dashboard</CardDescription>
           </CardHeader>
+
           <CardContent>
             {error && (
               <Alert className="mb-4 border-red-200 bg-red-50">
@@ -88,18 +94,20 @@ export default function AdminLogin() {
 
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
                 <FormField
                   control={form.control}
-                  name="username"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-college-dark">Username</FormLabel>
+                      <FormLabel className="text-college-dark">Email</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <User className="absolute left-3 top-3 h-4 w-4 text-college-gray" />
                           <Input
                             {...field}
-                            placeholder="Enter your username"
+                            placeholder="Enter your email"
+                            type="email"
                             className="pl-9"
                             disabled={loginMutation.isPending}
                           />
@@ -143,22 +151,20 @@ export default function AdminLogin() {
               </form>
             </Form>
 
-            {/* Demo Credentials */}
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h4 className="text-sm font-medium text-college-dark mb-2">Demo Credentials</h4>
               <div className="text-sm text-college-gray space-y-1">
-                <p><strong>Username:</strong> admin</p>
+                <p><strong>Email:</strong> admin@yourcollege.com</p>
                 <p><strong>Password:</strong> admin123</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Footer */}
         <div className="text-center mt-8 text-sm text-college-gray">
           <p>Leadership JOYCEP Training College</p>
-          <p>Health & Wellness Education • Kitengela, Kenya</p>
         </div>
+
       </div>
     </div>
   );

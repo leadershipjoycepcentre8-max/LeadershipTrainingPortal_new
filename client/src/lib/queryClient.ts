@@ -24,20 +24,28 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
-): Promise<Response> {
-  const res = await fetch(buildUrl(url), {
+export async function apiRequest(method: string, url: string, body?: any) {
+  const res = await fetch(import.meta.env.VITE_API_BASE_URL + url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include", // IMPORTANT for cookies
+    body: body ? JSON.stringify(body) : undefined,
   });
 
-  await throwIfResNotOk(res);
-  return res;
+  // If request failed, throw the parsed error message
+  if (!res.ok) {
+    let errText = await res.text();
+    try {
+      throw new Error(JSON.parse(errText).error || errText);
+    } catch {
+      throw new Error(errText);
+    }
+  }
+
+  // Return parsed JSON body
+  return res.json();
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
