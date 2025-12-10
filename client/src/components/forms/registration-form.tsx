@@ -25,6 +25,42 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const courses = [
+  // SCHOOL OF SOCIAL SCIENCES
+  { label: "Diploma in Counselling Psychology", value: "diploma-cp" },
+  { label: "Certificate in Counselling Psychology", value: "certificate-cp" },
+  { label: "Higher Diploma in Counselling Psychology", value: "higher-diploma-cp" },
+  { label: "Diploma in Social Work & Community Development", value: "diploma-swd" },
+  { label: "Certificate in Social Work & Community Development", value: "certificate-swd" },
+  { label: "Certificate in Community Health", value: "community-health" },
+  { label: "HIV Testing Services (HTS / VCT)", value: "hts-vct" },
+  { label: "Adherence Counselling", value: "adherence-counselling" },
+  { label: "Kenya Sign Language (KSL)", value: "ksl" },
+  { label: "Basic Computer Packages (Social Sciences)", value: "basic-packages-ss" },
+
+  // SCHOOL OF APPLIED SCIENCES
+  { label: "First Aid", value: "first-aid" },
+  { label: "Fire Safety", value: "fire-safety" },
+  { label: "Disaster Management", value: "disaster-management" },
+  { label: "Basic Nutrition", value: "nutrition" },
+  { label: "Communicable Disease Control", value: "cdc" },
+
+  // SCHOOL OF BUSINESS
+  { label: "Diploma in Business Management", value: "diploma-bm" },
+  { label: "Certificate in Business Management", value: "certificate-bm" },
+  { label: "Diploma in Human Resource Management", value: "diploma-hrm" },
+  { label: "Certificate in HR Management", value: "certificate-hrm" },
+  { label: "Diploma in Project Management", value: "diploma-pm" },
+  { label: "Certificate in Project Management", value: "certificate-pm" },
+
+  // SCHOOL OF COMPUTING
+  { label: "Computer Packages", value: "computer-packages" },
+  { label: "ICDL", value: "icdl" },
+  { label: "Graphic Design", value: "graphic-design" },
+  { label: "Data Analysis / Data Management", value: "data-analysis" },
+  { label: "Introduction to Programming", value: "programming-intro" },
+];
+
 const formSchema = z.object({
   fullName: z.string().min(2),
   email: z.string().email(),
@@ -64,7 +100,9 @@ export default function RegistrationForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6 bg-white p-6 rounded-lg shadow-sm border"
         >
-          <h2 className="text-center text-3xl font-bold">Registration Form</h2>
+          <h2 className="text-center text-3xl font-bold text-green-700">
+            Registration Form
+          </h2>
 
           {/* NAME + EMAIL */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -121,31 +159,20 @@ export default function RegistrationForm() {
                   <FormLabel>Course of Interest</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full bg-white border border-green-700 rounded-md">
                         <SelectValue placeholder="Select a course" />
                       </SelectTrigger>
                     </FormControl>
 
-                    {/* Popper mode prevents overlap */}
-                    <SelectContent position="popper" className="z-50">
-                      <SelectItem value="HIV (VCT) Counselling and Testing">
-                        HIV (VCT) Counselling and Testing
-                      </SelectItem>
-                      <SelectItem value="Adherence Counselling Certificate">
-                        Adherence Counselling Certificate
-                      </SelectItem>
-                      <SelectItem value="Diploma in Counselling">
-                        Diploma in Counselling
-                      </SelectItem>
-                      <SelectItem value="Certificate in Counselling">
-                        Certificate in Counselling
-                      </SelectItem>
-                      <SelectItem value="Primary Guidance">Primary Guidance</SelectItem>
-                      <SelectItem value="Kenya Sign Language">Kenya Sign Language</SelectItem>
-                      <SelectItem value="ECDE">ECDE</SelectItem>
-                      <SelectItem value="Computer Packages">
-                        Computer Packages
-                      </SelectItem>
+                    <SelectContent
+                      position="popper"
+                      className="z-[9999] bg-[#CCF5E1] border border-green-700 shadow-xl rounded-md"
+                    >
+                      {courses.map((c) => (
+                        <SelectItem key={c.value} value={c.label}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -173,7 +200,10 @@ export default function RegistrationForm() {
             )}
           />
 
-          <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600">
+          <Button
+            type="submit"
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
+          >
             Submit Registration
           </Button>
 

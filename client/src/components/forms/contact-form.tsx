@@ -118,17 +118,21 @@ export default function ContactForm() {
                 <FormLabel>Subject</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full bg-white border border-green-700 rounded-md">
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                   </FormControl>
 
-                  {/* Popper mode prevents overlap */}
-                  <SelectContent position="popper" className="z-50">
+                  <SelectContent
+                    position="popper"
+                    className="z-[9999] bg-[#CCF5E1] border border-green-700 shadow-xl rounded-md"
+                  >
                     <SelectItem value="Course Inquiry">Course Inquiry</SelectItem>
                     <SelectItem value="Service Inquiry">Service Inquiry</SelectItem>
                     <SelectItem value="Admissions">Admissions</SelectItem>
-                    <SelectItem value="General Information">General Information</SelectItem>
+                    <SelectItem value="General Information">
+                      General Information
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -151,7 +155,10 @@ export default function ContactForm() {
             )}
           />
 
-          <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600">
+          <Button
+            type="submit"
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
+          >
             Send Message
           </Button>
 
