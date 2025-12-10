@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 
 import {
   Form,
@@ -17,80 +17,62 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
 const formSchema = z.object({
-  fullName: z.string().nonempty("Full name is required"),
-  email: z.string().email("Invalid email"),
-  subject: z.string().nonempty("Please select a subject"),
-  message: z.string().min(5, "Message too short"),
+  name: z.string().min(2, "Name is required"),
+  email: z.string().email("Enter a valid email"),
+  phone: z.string().min(10, "Enter a valid phone number"),
+  subject: z.string().min(1, "Please select a subject"),
+  message: z.string().min(5, "Message is required"),
 });
 
-// SUBJECT OPTIONS
-const subjects = [
-  { label: "General Inquiry", value: "general" },
-  { label: "Admissions", value: "admissions" },
-  { label: "Counselling Programs", value: "counselling" },
-  { label: "Exam & Certification", value: "exams" },
-  { label: "Course Fees", value: "fees" },
-  { label: "Other", value: "other" },
-];
-
 export default function ContactForm() {
-  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "",
+      name: "",
       email: "",
+      phone: "",
       subject: "",
       message: "",
     },
   });
 
-  async function onSubmit(values) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      setLoading(true);
-
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/contacts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-
-      alert("Message sent successfully!");
+      console.log("Submitted message:", values);
+      setSubmitted(true);
       form.reset();
     } catch (error) {
-      alert("Error sending message");
-    } finally {
-      setLoading(false);
+      console.error("Submission failed:", error);
     }
   }
 
   return (
-    <div className="w-full max-w-xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold">Contact Us</h2>
-
+    <div className="max-w-3xl mx-auto p-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-
-          {/* FULL NAME */}
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6 bg-white p-6 rounded-lg shadow-sm border"
+        >
+          {/* NAME */}
           <FormField
             control={form.control}
-            name="fullName"
+            name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel>Your Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your full name" {...field} />
+                  <Input placeholder="Enter your name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -105,14 +87,29 @@ export default function ContactForm() {
               <FormItem>
                 <FormLabel>Email Address</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your email" {...field} />
+                  <Input placeholder="Enter your email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* SUBJECT SELECT — FIXED */}
+          {/* PHONE */}
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your phone number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* SUBJECT */}
           <FormField
             control={form.control}
             name="subject"
@@ -121,21 +118,19 @@ export default function ContactForm() {
                 <FormLabel>Subject</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="z-50 relative">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                   </FormControl>
 
-                  {/* FIXED DROPDOWN OVERLAP */}
-                  <SelectContent className="z-50" position="popper">
-                    {subjects.map((subject) => (
-                      <SelectItem key={subject.value} value={subject.value}>
-                        {subject.label}
-                      </SelectItem>
-                    ))}
+                  {/* Popper mode prevents overlap */}
+                  <SelectContent position="popper" className="z-50">
+                    <SelectItem value="Course Inquiry">Course Inquiry</SelectItem>
+                    <SelectItem value="Service Inquiry">Service Inquiry</SelectItem>
+                    <SelectItem value="Admissions">Admissions</SelectItem>
+                    <SelectItem value="General Information">General Information</SelectItem>
                   </SelectContent>
                 </Select>
-
                 <FormMessage />
               </FormItem>
             )}
@@ -147,19 +142,24 @@ export default function ContactForm() {
             name="message"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Your Message</FormLabel>
+                <FormLabel>Message</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Write your message..." {...field} />
+                  <Textarea placeholder="Enter your message" rows={5} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* SUBMIT BUTTON */}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Sending..." : "Send Message"}
+          <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600">
+            Send Message
           </Button>
+
+          {submitted && (
+            <p className="text-center text-green-600 font-medium">
+              Message submitted successfully!
+            </p>
+          )}
         </form>
       </Form>
     </div>

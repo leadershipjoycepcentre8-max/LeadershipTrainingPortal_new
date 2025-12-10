@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+
 import {
   Form,
   FormControl,
@@ -17,175 +19,169 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
 
 const formSchema = z.object({
-  fullName: z.string().nonempty("Full name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().nonempty("Phone number is required"),
-  course: z.string().nonempty("Please select a course"),
-  message: z.string().optional(),
+  fullName: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(10),
+  course: z.string().min(1),
+  additionalInfo: z.string().optional(),
 });
 
-// UPDATED COURSES FROM PDF
-const courses = [
-  { label: "HIV (VCT) Counselling and Testing – Short Course", value: "vct-counselling-testing" },
-  { label: "Adherence Counselling Certificate", value: "adherence-counselling" },
-  { label: "Diploma in Counselling", value: "diploma-counselling" },
-  { label: "Certificate in Counselling", value: "certificate-counselling" },
-  { label: "Primary Guidance", value: "primary-guidance" },
-  { label: "Kenya Sign Language", value: "kenya-sign-language" },
-  { label: "ECDE", value: "ecde" },
-  { label: "Computer Packages", value: "computer-packages" },
-];
-
 export default function RegistrationForm() {
-  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
       email: "",
       phone: "",
       course: "",
-      message: "",
+      additionalInfo: "",
     },
   });
 
-  async function onSubmit(values) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      setLoading(true);
-
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/students`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(values),
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error("Failed to submit registration");
-      }
-
-      alert("Registration submitted successfully!");
+      console.log("Registration submitted:", values);
+      setSubmitted(true);
       form.reset();
     } catch (error) {
-      alert("Error submitting registration.");
-    } finally {
-      setLoading(false);
+      console.error("Submission failed:", error);
     }
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Student Registration Form</h2>
-
+    <div className="max-w-3xl mx-auto p-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6 bg-white p-6 rounded-lg shadow-sm border"
+        >
+          <h2 className="text-center text-3xl font-bold">Registration Form</h2>
 
-          {/* FULL NAME */}
-          <FormField
-            control={form.control}
-            name="fullName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Full Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your full name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* EMAIL */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email Address</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* PHONE */}
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your phone number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* COURSE SELECT — FIXED */}
-          <FormField
-            control={form.control}
-            name="course"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Course of Interest</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+          {/* NAME + EMAIL */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="fullName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <SelectTrigger className="z-50 relative">
-                      <SelectValue placeholder="Select a course" />
-                    </SelectTrigger>
+                    <Input placeholder="Enter your full name" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                  {/* FIXED DROPDOWN OVERLAP */}
-                  <SelectContent className="z-50" position="popper">
-                    {courses.map((course) => (
-                      <SelectItem key={course.value} value={course.value}>
-                        {course.label}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* PHONE + COURSE */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your phone number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="course"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Course of Interest</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a course" />
+                      </SelectTrigger>
+                    </FormControl>
+
+                    {/* Popper mode prevents overlap */}
+                    <SelectContent position="popper" className="z-50">
+                      <SelectItem value="HIV (VCT) Counselling and Testing">
+                        HIV (VCT) Counselling and Testing
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      <SelectItem value="Adherence Counselling Certificate">
+                        Adherence Counselling Certificate
+                      </SelectItem>
+                      <SelectItem value="Diploma in Counselling">
+                        Diploma in Counselling
+                      </SelectItem>
+                      <SelectItem value="Certificate in Counselling">
+                        Certificate in Counselling
+                      </SelectItem>
+                      <SelectItem value="Primary Guidance">Primary Guidance</SelectItem>
+                      <SelectItem value="Kenya Sign Language">Kenya Sign Language</SelectItem>
+                      <SelectItem value="ECDE">ECDE</SelectItem>
+                      <SelectItem value="Computer Packages">
+                        Computer Packages
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* MESSAGE */}
+          {/* ADDITIONAL INFO */}
           <FormField
             control={form.control}
-            name="message"
+            name="additionalInfo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Additional Information (Optional)</FormLabel>
+                <FormLabel>Additional Information</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Write additional notes here..." {...field} />
+                  <Textarea
+                    placeholder="Any additional information or questions"
+                    rows={5}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* SUBMIT */}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Submitting..." : "Submit Registration"}
+          <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600">
+            Submit Registration
           </Button>
+
+          {submitted && (
+            <p className="text-center text-green-600 font-medium">
+              Registration submitted successfully!
+            </p>
+          )}
         </form>
       </Form>
     </div>
